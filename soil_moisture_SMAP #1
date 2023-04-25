@@ -1,0 +1,29 @@
+// Soil Moisture - SMAP (Soil Moisture Active Passive) #1 //
+
+// Extract & Visualize Time Series Analysis of SMAP soil moisture 
+// and open Earth Engine Chart for single pixel
+
+// 1. Import SMAP soil moisture data
+var SM = ee.ImageCollection('NASA_USDA/HSL/SMAP10KM_soil_moisture');
+print(SM);
+ 
+// 2. Filter the image collection for data and surface soil moisture band
+var filteredSM = SM.filter(ee.Filter.date('2015-04-02', '2022-08-04')).select('smp');
+print(filteredSM);
+
+// 3. Set visualization parameter
+var Vis = {
+  min: 0,
+  max: 1, // ssm max: 26 (unit: mm)
+  palette: ['ff0303', 'efff07', 'efff07', '418504', '0300ff']};
+
+// 4. Add SMAP layer
+Map.setCenter(127.7669, 35.9078, 6); 
+// Map.setCenter(lon, lat, zoom) zoom 0 to 24
+Map.addLayer(filteredSM.first(),Vis,'Soil Moisture');
+
+// 5. Displaying soil moisture time series for single pixel
+// ee.ImageCollection.toBands : Converts a collection to a single multi-band image 
+// containing all of the bands of every image in the collection.
+var image = filteredSM.toBands();
+Map.addLayer(image,{},'Soil Moisture_time series for single pixel');

@@ -1,0 +1,29 @@
+// Soil Moisture - SMAP (Soil Moisture Active Passive) #4 //
+
+// Extract & Visualize averaged (date & region) SMAP soil moisture
+
+var roi = Countries.filter(ee.Filter.eq('country_na', 'Korea, South'));
+Map.addLayer(roi, {}, "South Korea");
+Map.centerObject(roi);
+
+var SM = SM;
+var filteredSM = SM.filterDate('2017-01-01', '2017-12-31');
+var Surface_Soil_Moisture = filteredSM.select('ssm');
+print(Surface_Soil_Moisture.size());
+
+var Surface_Soil_Moisture_average = Surface_Soil_Moisture.reduce(ee.Reducer.mean());
+
+var Vis = {
+  min: 0.0,
+  max: 26.0,
+  palette: ['ff0303', 'efff07', 'efff07', '418504', '0300ff']};
+  
+var Surface_Soil_Moisture_average_South_Korea = Surface_Soil_Moisture_average.clip(roi);
+Map.addLayer(Surface_Soil_Moisture_average_South_Korea, Vis, 'South Korea_Surface_Soil_Moisture_average');
+
+var Surface_Soil_Moisture_average_South_Korea_value = Surface_Soil_Moisture_average.reduceRegion({
+  reducer: ee.Reducer.mean(),
+  geometry: roi,
+  scale: 1000,
+  maxPixels: 1e13})
+print(Surface_Soil_Moisture_average_South_Korea_value)

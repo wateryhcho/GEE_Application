@@ -1,0 +1,39 @@
+// Soil Moisture - SMAP (Soil Moisture Active Passive) #3 //
+
+// Extract & Visualize Yealy Mean of SMAP soil moisture 
+// and export to your Google Drive as an image file
+
+// 1. Define countries boundary
+var Countries = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017');
+var roi = Countries.filter(ee.Filter.eq('country_na', 'Korea, South'));
+Map.addLayer(roi, {}, "South Korea", false);
+Map.centerObject(roi);
+
+// 2. Load SMAP Data
+var filteredSM = ee.ImageCollection('NASA_USDA/HSL/SMAP10KM_soil_moisture')
+                    .filter(ee.Filter.date('2017-01-01', '2017-12-31'))
+                    .filterBounds(roi);
+var Soil_Moisture_Profile = filteredSM.select('smp');
+print(Soil_Moisture_Profile.first());
+
+// 3. Set visualization parameter
+var Vis = {
+  min: 0.0,
+  max: 1.0,
+  palette: ['ff0303', 'efff07', 'efff07', '418504', '0300ff']};
+  
+// 4. Center and add SMAP layer
+Map.centerObject(roi, 6);
+Map.addLayer(Soil_Moisture_Profile.first(), Vis, 'Soil Moisture Profile');
+Map.addLayer(Soil_Moisture_Profile.mean().clip(roi), Vis, 'Soil Moisture Profile_South Korea');
+
+// 5. Export to Google Drive
+Export.image.toDrive({
+    image: Soil_Moisture_Profile.mean().clip(roi),
+    description: 'SMAP_South_Korea_2017', 
+    folder: 'earth_engine_data', 
+    fileNamePrefix: 'SMAP_South_Korea_2017', 
+    scale: 1000,
+    region: roi,
+    maxPixels: 1e13
+});
